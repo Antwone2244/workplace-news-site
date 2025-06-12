@@ -20,5 +20,39 @@
   <!-- <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script> -->
   <script src="script.js"></script>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Your existing script.js content here
+    fetch('news/index.json')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('announcements');
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'announcement';
+          div.innerHTML = `
+            <img src="${item.image}" alt="${item.title}" />
+            <h3>${item.title}</h3>
+            <p>${item.description}</p>
+            <a href="${item.link}" target="_blank">Read More</a>
+          `;
+          container.appendChild(div);
+        });
+      })
+      .catch(error => {
+        console.error('Error loading news:', error);
+        // Fallback to hardcoded data
+        const container = document.getElementById('announcements');
+        container.innerHTML = `
+          <div class="announcement">
+            <h3>Flood Watch</h3>
+            <p>There is a flood watch in progress</p>
+            <a href="#" target="_blank">Read More</a>
+          </div>
+        `;
+      });
+  });
+</script>
 </body>
 </html>
