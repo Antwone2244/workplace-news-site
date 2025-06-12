@@ -1,15 +1,29 @@
-// Hardcoded list of .md files (avoid directory listing)
-const NEWS_FILES = ['flood-watch.md', 'welcome.md'];
+document.addEventListener('DOMContentLoaded', async () => {
+  const container = document.getElementById('announcements');
+  if (!container) {
+    console.error('Error: Announcements container not found');
+    return;
+  }
 
-async function loadNews() {
   try {
-    const newsItems = [];
+    // Try loading from JSON first
+    const response = await fetch('news/index.json');
+    if (!response.ok) throw new Error('JSON load failed');
     
-    // Process each .md file
-    for (const file of NEWS_FILES) {
-      try {
+    const newsItems = await response.json();
+    renderNews(newsItems);
+    
+  } catch (jsonError) {
+    console.warn('JSON load failed, trying markdown files:', jsonError);
+    
+    try {
+      // Fallback to markdown files
+      const mdFiles = ['flood-watch.md', 'flood-watch-update.md'];
+      const newsItems = [];
+      
+      for (const file of mdFiles) {
         const res = await fetch(`news/${file}`);
-        if (!res.ok) continue; // Skip missing files
+        if (!res.ok) continue;
         
         const text = await res.text();
         const meta = text.match(/---\n([\s\S]*?)\n---/)?.[1] || '';
@@ -17,30 +31,32 @@ async function loadNews() {
         newsItems.push({
           title: meta.match(/title: (.*)/)?.[1]?.trim() || 'Untitled',
           description: meta.match(/description: (.*)/)?.[1]?.trim() || '',
-          image: meta.match(/image: (.*)/)?.[1]?.trim() || 'images/uploads/default.jpg',
+          image: meta.match(/image: (.*)/)?.[1]?.trim() || '/images/uploads/default.jpg',
           link: meta.match(/link: (.*)/)?.[1]?.trim() || '#'
         });
-      } catch (e) {
-        console.warn(`Failed to load ${file}:`, e);
       }
+      
+      renderNews(newsItems.length ? newsItems : [{
+        title: "Default News",
+        description: "Check your news markdown files",
+        image: "/images/uploads/default.jpg",
+        link: "#"
+      }]);
+      
+    } catch (mdError) {
+      console.error('Markdown load failed:', mdError);
+      renderNews([{
+        title: "Error Loading News",
+        description: "Please try again later",
+        image: "/images/uploads/error.jpg",
+        link: "#"
+      }]);
     }
-
-    renderNews(newsItems.length ? newsItems : [{
-      title: "No News Found",
-      description: "Check your .md files in /news",
-      image: "images/uploads/default.jpg",
-      link: "#"
-    }]);
-    
-  } catch (error) {
-    console.error('Critical error:', error);
   }
-}
+});
 
 function renderNews(items) {
   const container = document.getElementById('announcements');
-  if (!container) return;
-  
   container.innerHTML = items.map(item => `
     <div class="announcement">
       <img src="${item.image}" alt="${item.title}">
@@ -50,6 +66,3 @@ function renderNews(items) {
     </div>
   `).join('');
 }
-
-// Initialize
-loadNews();
