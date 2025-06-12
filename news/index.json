@@ -1,1 +1,8 @@
-[{"title": "Welcome!", "description": "First post!", "image": "images/uploads/default.jpg", "link": "#"}]
+[
+  {
+    "title": "Welcome!",
+    "description": "First post!",
+    "image": "images/uploads/default.jpg",
+    "link": "#"
+  }
+]
