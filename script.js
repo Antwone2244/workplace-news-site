@@ -1,7 +1,14 @@
 fetch('news/index.json')
-  .then(res => res.json())
+  .then(res => {
+    if (!res.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return res.json();
+  })
   .then(data => {
     const container = document.getElementById('announcements');
+    if (!container) return;
+    
     data.forEach(item => {
       const div = document.createElement('div');
       div.className = 'announcement';
@@ -13,4 +20,7 @@ fetch('news/index.json')
       `;
       container.appendChild(div);
     });
+  })
+  .catch(error => {
+    console.error('Error loading news:', error);
   });
